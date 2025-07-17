@@ -49,7 +49,7 @@ async function sendToTheLibApp(mangaData) {
     // Get stored auth token
     const result = await chrome.storage.local.get(['thelibAuthToken', 'thelibServerUrl']);
     const token = result.thelibAuthToken;
-    const serverUrl = result.thelibServerUrl || 'http://localhost:3000';
+    const serverUrl = result.thelibServerUrl || 'https://thelib.vercel.app';
     
     if (!token) {
       // Open popup for authentication

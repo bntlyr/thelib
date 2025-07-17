@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function checkAuthentication() {
   try {
     const result = await chrome.storage.local.get(['thelibAuthToken', 'thelibServerUrl']);
-    const serverUrl = result.thelibServerUrl || 'http://localhost:3000';
+    const serverUrl = result.thelibServerUrl || 'https://thelib.vercel.app';
     
     if (!result.thelibAuthToken) {
       return { authenticated: false };
@@ -58,7 +58,7 @@ function showLoginSection() {
 }
 
 function openTheLib() {
-  const serverUrl = document.getElementById('serverUrl').value || 'http://localhost:3000';
+  const serverUrl = document.getElementById('serverUrl').value || 'https://thelib.vercel.app';
   
   // Store server URL
   chrome.storage.local.set({ thelibServerUrl: serverUrl });
@@ -147,7 +147,7 @@ async function addMangaToLibrary() {
 
   try {
     const result = await chrome.storage.local.get(['thelibAuthToken', 'thelibServerUrl']);
-    const serverUrl = result.thelibServerUrl || 'http://localhost:3000';
+    const serverUrl = result.thelibServerUrl || 'https://thelib.vercel.app';
 
     const formData = {
       title: document.getElementById('title').value,

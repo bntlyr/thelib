@@ -54,7 +54,7 @@ A browser extension that allows you to quickly add manga and content to your The
 
 2. **First time setup**:
    - Click the TheLib extension icon in your browser
-   - Enter your TheLib server URL (default: `http://localhost:3000`)
+   - Enter your TheLib server URL (default: `https://thelib.vercel.app`)
    - Click "Open TheLib to Login"
    - Sign in to your TheLib account
    - Return to the extension popup
