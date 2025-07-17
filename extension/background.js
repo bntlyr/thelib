@@ -24,6 +24,23 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Handle messages from content script and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "authTokenReceived") {
+    // Store the auth token
+    chrome.storage.local.set({
+      thelibAuthToken: request.token
+    });
+    
+    // Notify popup if it's open
+    chrome.runtime.sendMessage({
+      action: "authTokenUpdated"
+    }).catch(() => {
+      // Popup might not be open, that's fine
+    });
+    
+    sendResponse({ success: true });
+    return;
+  }
+  
   if (request.action === "addToTheLib") {
     // Store the extracted data temporarily
     chrome.storage.local.set({

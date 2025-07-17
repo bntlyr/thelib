@@ -38,8 +38,9 @@ async function checkAuthentication() {
       return { authenticated: false };
     }
 
-    // Test the token by making a request to the API
-    const response = await fetch(`${serverUrl}/api/auth/session`, {
+    // Test the token by making a request to the extension auth API
+    const response = await fetch(`${serverUrl}/api/extension/auth`, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${result.thelibAuthToken}`
       }
@@ -64,18 +65,20 @@ function openTheLib() {
   chrome.storage.local.set({ thelibServerUrl: serverUrl });
   
   // Open TheLib in new tab
-  chrome.tabs.create({ url: `${serverUrl}/auth/signin` });
+  chrome.tabs.create({ url: `${serverUrl}/auth/extension-callback` });
   
-  showStatus('Please sign in to TheLib and then return to this popup.', 'loading');
+  showStatus('Please sign in to TheLib in the new tab.', 'loading');
   
   // Check for auth every 2 seconds
   const authCheckInterval = setInterval(async () => {
-    const authCheck = await checkAuthentication();
-    if (authCheck.authenticated) {
+    // Check if user has been authenticated
+    const result = await chrome.storage.local.get(['thelibAuthToken']);
+    if (result.thelibAuthToken) {
       clearInterval(authCheckInterval);
       document.getElementById('loginSection').classList.add('hidden');
       document.getElementById('mainSection').classList.remove('hidden');
       await loadMangaData();
+      showStatus('Successfully authenticated!', 'success');
     }
   }, 2000);
 }

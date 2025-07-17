@@ -1,4 +1,36 @@
 // Content script for extracting manga data from web pages
+
+// Monitor for authentication token in localStorage
+function monitorAuthToken() {
+  const checkAuth = () => {
+    const token = localStorage.getItem('thelibExtensionToken');
+    const authFlag = localStorage.getItem('thelibExtensionAuth');
+    
+    if (token && authFlag === 'true') {
+      // Send token to extension
+      chrome.runtime.sendMessage({
+        action: 'authTokenReceived',
+        token: token
+      });
+      
+      // Clear the flags
+      localStorage.removeItem('thelibExtensionToken');
+      localStorage.removeItem('thelibExtensionAuth');
+    }
+  };
+  
+  // Check immediately
+  checkAuth();
+  
+  // Check periodically
+  setInterval(checkAuth, 1000);
+}
+
+// Start monitoring if we're on the TheLib domain
+if (window.location.hostname.includes('thelib') || window.location.hostname.includes('vercel.app')) {
+  monitorAuthToken();
+}
+
 class MangaExtractor {
   constructor() {
     this.siteHandlers = {
