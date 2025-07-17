@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signIn, getSession } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,7 +43,7 @@ export default function SignIn() {
         router.push("/dashboard")
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       setError("An error occurred. Please try again.")
     } finally {
       setLoading(false)
@@ -61,12 +61,12 @@ export default function SignIn() {
 
   const handleGoogleSignIn = async () => {
     try {
-      const result = await signIn("google", { 
+      await signIn("google", { 
         callbackUrl: "/dashboard",
         redirect: true 
       })
       // Google sign-in will automatically redirect on success
-    } catch (error) {
+    } catch {
       setError("Google sign-in failed. Please try again.")
     }
   }
@@ -174,7 +174,7 @@ export default function SignIn() {
 
         <div className="text-center">
           <p className="text-slate-400">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
               Sign up here
             </Link>

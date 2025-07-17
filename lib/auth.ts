@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days for remember me functionality
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id
       }
@@ -72,7 +72,7 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
           // Check if user exists
@@ -109,12 +109,16 @@ export const authOptions: NextAuthOptions = {
             return true
           } else {
             // Create new user for OAuth  
-            const newUser = await prisma.user.create({
+            await prisma.user.create({
               data: {
                 email: user.email!,
                 name: user.name || "",
                 image: user.image,
-              } as any // Type assertion for optional password
+              } as {
+                email: string
+                name: string
+                image: string | null | undefined
+              }
             })
             return true
           }

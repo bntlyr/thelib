@@ -51,7 +51,7 @@ export default function SignUpPage() {
         const data = await res.json()
         setError(data.message || "Registration failed")
       }
-    } catch (error) {
+    } catch {
       setError("An error occurred. Please try again.")
     } finally {
       setLoading(false)
@@ -64,7 +64,7 @@ export default function SignUpPage() {
         callbackUrl: "/dashboard",
         redirect: true 
       })
-    } catch (error) {
+    } catch {
       setError("Google sign-up failed. Please try again.")
     }
   }

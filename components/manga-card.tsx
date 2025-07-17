@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Clock, Star, BookOpen } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -65,10 +66,11 @@ export default function MangaCard({ manga }: MangaCardProps) {
                 <BookOpen className="h-8 w-8 text-slate-500" />
               </div>
             )}
-            <img
+            <Image
               src={manga.imgPath || "/placeholder.svg"}
               alt={manga.title}
-              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
+              fill
+              className={`object-cover transition-all duration-300 group-hover:scale-105 ${
                 imageLoaded ? "opacity-100" : "opacity-0"
               }`}
               onLoad={() => setImageLoaded(true)}

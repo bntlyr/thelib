@@ -6,9 +6,10 @@ import { prisma } from "@/lib/prisma"
 // PUT - Update manga
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
@@ -33,7 +34,7 @@ export async function PUT(
     // Check if manga belongs to user
     const existingManga = await prisma.manga.findFirst({
       where: { 
-        id: params.id,
+        id: id,
         userId: session.user.id 
       }
     })
@@ -46,7 +47,7 @@ export async function PUT(
     }
 
     const manga = await prisma.manga.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         title,
         currentChapter,
@@ -73,9 +74,10 @@ export async function PUT(
 // DELETE - Delete manga
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
@@ -88,7 +90,7 @@ export async function DELETE(
     // Check if manga belongs to user
     const existingManga = await prisma.manga.findFirst({
       where: { 
-        id: params.id,
+        id: id,
         userId: session.user.id 
       }
     })
@@ -101,7 +103,7 @@ export async function DELETE(
     }
 
     await prisma.manga.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({ message: "Manga deleted successfully" })

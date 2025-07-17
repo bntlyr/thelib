@@ -17,7 +17,12 @@ async function getAuthenticatedUser(req: NextRequest) {
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.substring(7)
     try {
-      const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!) as any
+      const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!) as {
+        userId: string
+        email: string
+        iat: number
+        exp: number
+      }
       if (decoded.userId) {
         return { id: decoded.userId, email: decoded.email }
       }
