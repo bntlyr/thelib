@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button"
 interface Manga {
   id: string
   title: string
-  current_chapter: string
+  currentChapter: string
   status: string
-  img_path: string
-  rating: number
+  imgPath?: string
+  rating?: number
   updatedAt: string
-  source: string // Added source property
+  source?: string
+  description?: string
+  genres?: string[]
+  author?: string
 }
 
 interface MangaCardProps {
@@ -63,7 +66,7 @@ export default function MangaCard({ manga }: MangaCardProps) {
               </div>
             )}
             <img
-              src={manga.img_path || "/placeholder.svg"}
+              src={manga.imgPath || "/placeholder.svg"}
               alt={manga.title}
               className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
                 imageLoaded ? "opacity-100" : "opacity-0"
@@ -87,18 +90,26 @@ export default function MangaCard({ manga }: MangaCardProps) {
         </Badge>
 
         {/* Rating */}
-        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1">
-          <Star className="h-3 w-3 text-yellow-400 fill-current" />
-          <span className="text-xs text-white font-medium">{manga.rating}</span>
-        </div>
+        {manga.rating && (
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1">
+            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+            <span className="text-xs text-white font-medium">{manga.rating.toFixed(1)}</span>
+          </div>
+        )}
 
         {/* Hover Actions */}
         <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-700" asChild>
-            <a href={manga.source} target="_blank" rel="noopener noreferrer">
-              Continue Reading
-            </a>
-          </Button>
+          {manga.source ? (
+            <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-700" asChild>
+              <a href={manga.source} target="_blank" rel="noopener noreferrer">
+                Continue Reading
+              </a>
+            </Button>
+          ) : (
+            <Button size="sm" className="w-full bg-slate-600" disabled>
+              No Source Available
+            </Button>
+          )}
         </div>
       </div>
 
@@ -108,7 +119,7 @@ export default function MangaCard({ manga }: MangaCardProps) {
           <h3 className="font-semibold text-white text-sm sm:text-base line-clamp-2 group-hover:text-indigo-400 transition-colors">
             {manga.title}
           </h3>
-          <p className="text-slate-400 text-xs mt-1">Chapter {manga.current_chapter}</p>
+          <p className="text-slate-400 text-xs mt-1">Chapter {manga.currentChapter}</p>
         </div>
 
         {/* Updated Date */}

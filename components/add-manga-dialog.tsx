@@ -77,17 +77,38 @@ export function AddMangaDialog({ isOpen, onClose, onMangaAdded }: AddMangaDialog
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Simulate adding manga for frontend-only
-    console.log("Simulating manga added:", {
-      title: parsedData.title || "Unknown Manga",
-      mangaLink: formData.mangaLink,
-      imagePath: "/placeholder.svg?height=160&width=112",
-      rating: formData.rating,
-      currentChapter: parsedData.currentChapter || 1,
-      status: formData.status,
-    })
-    resetForm()
-    onMangaAdded() // Trigger a refresh or notification in the parent component
+    
+    if (!parsedData.title) {
+      console.error("No title parsed from the URL")
+      return
+    }
+
+    try {
+      const response = await fetch("/api/manga", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: parsedData.title,
+          currentChapter: parsedData.currentChapter.toString(),
+          status: formData.status,
+          rating: formData.rating > 0 ? formData.rating * 2 : null, // Convert 1-5 to 1-10 scale
+          source: formData.mangaLink,
+          imgPath: "/placeholder.svg?height=400&width=300",
+        }),
+      })
+
+      if (response.ok) {
+        resetForm()
+        onMangaAdded() // Trigger a refresh in the parent component
+      } else {
+        const errorData = await response.json()
+        console.error("Failed to add manga:", errorData.error)
+      }
+    } catch (error) {
+      console.error("Error adding manga:", error)
+    }
   }
 
   const resetForm = () => {

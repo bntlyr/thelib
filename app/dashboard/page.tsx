@@ -1,31 +1,65 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import MangaCard from "@/components/manga-card"
-import { mangaData } from "@/lib/data"
-import { Search, Filter, SortAsc, PlusCircle } from "lucide-react" // Added PlusCircle icon
+import { Search, Filter, SortAsc, PlusCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { AddMangaDialog } from "@/components/add-manga-dialog" // Import the new dialog
+import { AddMangaDialog } from "@/components/add-manga-dialog"
+
+interface Manga {
+  id: string
+  title: string
+  currentChapter: string
+  status: string
+  imgPath?: string
+  rating?: number
+  updatedAt: string
+  source?: string
+  description?: string
+  genres: string[]
+  author?: string
+}
 
 export default function Dashboard() {
+  const { data: session } = useSession()
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [sortBy, setSortBy] = useState("latest")
-  const [isAddMangaDialogOpen, setIsAddMangaDialogOpen] = useState(false) // State for dialog
+  const [isAddMangaDialogOpen, setIsAddMangaDialogOpen] = useState(false)
+  const [mangaData, setMangaData] = useState<Manga[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // For frontend-only, we'll use a local state for manga data
-  // In a real app, you'd refetch from an API or use a global state manager
-  const [localMangaData, setLocalMangaData] = useState(mangaData)
+  // Fetch manga data from API
+  const fetchMangaData = async () => {
+    try {
+      const response = await fetch("/api/manga")
+      if (response.ok) {
+        const data = await response.json()
+        setMangaData(data)
+      } else {
+        console.error("Failed to fetch manga data")
+      }
+    } catch (error) {
+      console.error("Error fetching manga data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (session) {
+      fetchMangaData()
+    }
+  }, [session])
 
   const filteredAndSortedManga = useMemo(() => {
-    const filtered = localMangaData.filter((manga) => {
-      // Use localMangaData
+    const filtered = mangaData.filter((manga) => {
       const matchesSearch = manga.title.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesStatus = statusFilter === "all" || manga.status.toLowerCase() === statusFilter.toLowerCase()
       return matchesSearch && matchesStatus
@@ -37,7 +71,7 @@ export default function Dashboard() {
         case "title":
           return a.title.localeCompare(b.title)
         case "chapter":
-          return Number.parseInt(b.current_chapter) - Number.parseInt(a.current_chapter)
+          return Number.parseInt(b.currentChapter) - Number.parseInt(a.currentChapter)
         case "latest":
         default:
           return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
@@ -45,14 +79,11 @@ export default function Dashboard() {
     })
 
     return filtered
-  }, [searchQuery, statusFilter, sortBy, localMangaData]) // Add localMangaData to dependencies
+  }, [searchQuery, statusFilter, sortBy, mangaData])
 
   const handleMangaAdded = () => {
-    // In a real app, you'd refetch data from your backend here.
-    // For this frontend-only example, we'll just log and close.
-    console.log("Manga added successfully! (Simulated)")
-    // If you want to see the new manga appear, you'd need to add it to localMangaData
-    // For now, we'll just close the dialog.
+    // Refresh manga data after adding new manga
+    fetchMangaData()
     setIsAddMangaDialogOpen(false)
   }
 
@@ -182,10 +213,19 @@ export default function Dashboard() {
             )}
           </div>
 
-          {filteredAndSortedManga.length === 0 ? (
+          {loading ? (
             <div className="text-center py-12">
-              <div className="text-slate-400 text-lg mb-2">No results found</div>
-              <p className="text-slate-500 text-sm">Try adjusting your search or filter criteria</p>
+              <div className="text-slate-400 text-lg mb-2">Loading your manga library...</div>
+            </div>
+          ) : filteredAndSortedManga.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-slate-400 text-lg mb-2">No manga found</div>
+              <p className="text-slate-500 text-sm">
+                {mangaData.length === 0 
+                  ? "Start building your library by adding your first manga!" 
+                  : "Try adjusting your search or filter criteria"
+                }
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6">

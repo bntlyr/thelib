@@ -1,31 +1,24 @@
 "use client"
 
 import { useState } from "react"
-import { Menu, X, BookOpen } from "lucide-react"
+import { Menu, X, BookOpen, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { SignIn } from "@/components/sign-in" // Import the SignIn dialog
-import { SignUp } from "@/components/sign-up" // Import the SignUp dialog
+import { useSession, signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false)
-  const [isSignUpDialogOpen, setIsSignUpDialogOpen] = useState(false) // State for SignUp dialog
+  const { data: session } = useSession()
+  const router = useRouter()
 
   const navItems = [
-    { name: "Home", href: "#" },
-    { name: "Anime", href: "#" },
-    { name: "Manga", href: "#" },
-    { name: "Manhwa", href: "#" },
+    { name: "Dashboard", href: "/dashboard" },
+    { name: "Library", href: "/dashboard" },
   ]
 
-  const handleSwitchToSignUp = () => {
-    setIsSignInDialogOpen(false) // Close sign-in dialog
-    setIsSignUpDialogOpen(true) // Open sign-up dialog
-  }
-
-  const handleSwitchToSignIn = () => {
-    setIsSignUpDialogOpen(false) // Close sign-up dialog
-    setIsSignInDialogOpen(true) // Open sign-in dialog
+  const handleSignOut = async () => {
+    await signOut({ redirect: false })
+    router.push("/auth/signin")
   }
 
   return (
@@ -42,24 +35,44 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            <div className="flex items-center space-x-1">
-              {navItems.map((item) => (
+            {session && (
+              <div className="flex items-center space-x-1">
+                {navItems.map((item) => (
+                  <Button
+                    key={item.name}
+                    variant="ghost"
+                    className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 text-sm font-medium transition-colors"
+                    asChild
+                  >
+                    <a href={item.href}>{item.name}</a>
+                  </Button>
+                ))}
+              </div>
+            )}
+            
+            {session ? (
+              <div className="flex items-center space-x-2 ml-4">
+                <div className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-300">
+                  <User className="h-4 w-4" />
+                  <span>{session.user?.name || session.user?.email}</span>
+                </div>
                 <Button
-                  key={item.name}
-                  variant="ghost"
-                  className="text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 text-sm font-medium transition-colors"
-                  asChild
+                  onClick={handleSignOut}
+                  variant="outline"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
                 >
-                  <a href={item.href}>{item.name}</a>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
                 </Button>
-              ))}
-            </div>
-            <Button
-              onClick={() => setIsSignInDialogOpen(true)} // Open SignIn dialog
-              className="ml-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium"
-            >
-              Login
-            </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => router.push("/auth/signin")}
+                className="ml-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium"
+              >
+                Login
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -79,7 +92,7 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-slate-700">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => (
+              {session && navItems.map((item) => (
                 <Button
                   key={item.name}
                   variant="ghost"
@@ -90,33 +103,40 @@ export default function Header() {
                   <a href={item.href}>{item.name}</a>
                 </Button>
               ))}
-              <Button
-                onClick={() => {
-                  setIsSignInDialogOpen(true) // Open SignIn dialog
-                  setIsMobileMenuOpen(false) // Close mobile menu
-                }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 text-base font-medium w-full mt-2"
-              >
-                Login
-              </Button>
+              
+              {session ? (
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center space-x-2 px-3 py-2 text-sm text-slate-300">
+                    <User className="h-4 w-4" />
+                    <span>{session.user?.name || session.user?.email}</span>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      handleSignOut()
+                      setIsMobileMenuOpen(false)
+                    }}
+                    variant="outline"
+                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    router.push("/auth/signin")
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 text-base font-medium w-full mt-2"
+                >
+                  Login
+                </Button>
+              )}
             </div>
           </div>
         )}
       </nav>
-
-      {/* SignIn Dialog */}
-      <SignIn
-        isOpen={isSignInDialogOpen}
-        onClose={() => setIsSignInDialogOpen(false)}
-        onSwitchToSignUp={handleSwitchToSignUp}
-      />
-
-      {/* SignUp Dialog */}
-      <SignUp
-        isOpen={isSignUpDialogOpen}
-        onClose={() => setIsSignUpDialogOpen(false)}
-        onSwitchToSignIn={handleSwitchToSignIn}
-      />
     </header>
   )
 }
